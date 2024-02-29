@@ -65,8 +65,9 @@ class PlanetResidentSyncService
      */
     public function sync()
     {
+        $url = self::API_URL;
         do {
-            $response = $this->client->request('GET', self::API_URL);
+            $response = $this->client->request('GET', $url);
             $data = json_decode($response->getBody(), true);
             $planetsData = $data['results'];
 
