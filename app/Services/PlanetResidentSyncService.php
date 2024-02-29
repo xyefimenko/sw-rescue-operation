@@ -4,10 +4,17 @@ namespace App\Services;
 
 use App\Models\Planet;
 use App\Models\Resident;
+use App\Repositories\PlanetRepository;
+use App\Repositories\ResidentRepository;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class PlanetResidentSyncService
 {
+
+    //TODO Add hash to compare coming data and skip if it's the same
+    //TODO Refactor the code if necessary
 
     /**
      * The URL of the Star Wars API planets.
@@ -17,67 +24,201 @@ class PlanetResidentSyncService
     const API_URL = 'https://swapi.py4e.com/api/planets/';
 
     /**
+     * The PlanetRepository instance.
+     *
+     * @var PlanetRepository
+     */
+    private $planetRepository;
+
+    /**
+     * The ResidentRepository instance.
+     *
+     * @var ResidentRepository
+     */
+    private $residentRepository;
+
+    /**
+     * The GuzzleHttp\Client instance.
+     *
+     * @var Client
+     */
+    private $client;
+
+    /**
+     * Create a new PlanetResidentSyncService instance.
+     *
+     * @param  PlanetRepository  $planetRepository
+     * @param  ResidentRepository  $residentRepository
+     * @return void
+     */
+    public function __construct(PlanetRepository $planetRepository, ResidentRepository $residentRepository)
+    {
+        $this->planetRepository = $planetRepository;
+        $this->residentRepository = $residentRepository;
+        $this->client = new Client();
+    }
+
+    /**
      * Sync data from the Star Wars API to the planets and residents tables.
      *
      * @return void
      */
     public function sync()
     {
-        $client = new Client();
+        do {
+            $response = $this->client->request('GET', self::API_URL);
+            $data = json_decode($response->getBody(), true);
+            $planetsData = $data['results'];
 
-        // Fetch data for planets
-        $response = $client->request('GET', self::API_URL);
-        $planetsData = json_decode($response->getBody(), true)['results'];
+            $this->parsePlanetData($planetsData);
 
-        // Parse planet data and create new Planet records
-        $planets = $this->parsePlanetData($planetsData);
-
-        // Parse resident data, create new Resident records, and associate them with the planets
-        foreach ($planets as $planet) {
-            $this->parseResidentData($planetsData['residents'], $planet);
-        }
+            $url = $data['next'];
+        } while ($url);
     }
 
     /**
      * Parse planet data and create new Planet records.
      *
      * @param  array  $planetsData
-     * @return array
+     * @return void
      */
     public function parsePlanetData(array $planetsData)
     {
-        $planets = [];
-
         foreach ($planetsData as $planetData) {
-            $planet = Planet::create([
-                'name' => $planetData['name'],
-            ]);
+            if (!$this->validatePlanetData($planetData)) {
+                continue;
+            }
 
-            $planets[] = $planet;
+            $planet = $this->createPlanet($planetData);
+
+            $promises = [];
+
+            foreach ($planetData['residents'] as $residentUrl) {
+                $promises[] = $this->client->getAsync($residentUrl)->then(
+                    function ($response) use ($planet) {
+                        $residentData = json_decode($response->getBody(), true);
+                        if ($this->validateResidentData($residentData)) {
+                            $this->createResident($residentData, $planet);
+                        }
+                    },
+                    function ($exception) {
+                        Log::error('Error fetching resident data: ' . $exception->getMessage());
+                    }
+                );
+            }
+
+            foreach ($promises as $promise) {
+                $promise->wait();
+            }
         }
-
-        return $planets;
     }
 
     /**
-     * Parse resident data, create new Resident records, and associate them with a Planet.
+     * Create a new Planet record or update an existing one.
      *
-     * @param  array  $residentUrls
-     * @param  Planet  $planet
-     * @return void
+     * @param  array  $planetData
+     * @return Planet
      */
-    public function parseResidentData(array $residentUrls, Planet $planet)
+    public function createPlanet(array $planetData): Planet
     {
-        $client = new Client();
+        return $this->planetRepository->updateOrCreate(
+            ['name' => $planetData['name']],
+            [
+                'rotation_period' => $planetData['rotation_period'],
+                'orbital_period' => $planetData['orbital_period'],
+                'diameter' => $planetData['diameter'],
+                'climate' => $planetData['climate'],
+                'gravity' => $planetData['gravity'],
+                'terrain' => $planetData['terrain'],
+                'surface_water' => $planetData['surface_water'],
+                'population' => $planetData['population'],
+                'url' => $planetData['url'],
+            ]
+        );
+    }
 
-        foreach ($residentUrls as $residentUrl) {
-            $response = $client->request('GET', $residentUrl);
-            $residentData = json_decode($response->getBody(), true);
-
-            Resident::create([
+    /**
+     * Create a new Resident record or update an existing one.
+     *
+     * @param  array  $residentData
+     * @param  Planet  $planet
+     * @return Resident
+     */
+    public function createResident(array $residentData, Planet $planet): Resident
+    {
+        return $this->residentRepository->updateOrCreate(
+            [
+                'name' => $residentData['name'],
+                'url' => $residentData['url']
+            ],
+            [
                 'planet_id' => $planet->id,
                 'name' => $residentData['name'],
-            ]);
+                'height' => $residentData['height'],
+                'mass' => $residentData['mass'],
+                'hair_color' => $residentData['hair_color'],
+                'skin_color' => $residentData['skin_color'],
+                'eye_color' => $residentData['eye_color'],
+                'birth_year' => $residentData['birth_year'],
+                'gender' => $residentData['gender'],
+            ]
+        );
+    }
+
+    /**
+     * Validate the provided planet data.
+     *
+     * @param  array  $planetData
+     * @return bool
+     */
+    public function validatePlanetData(array $planetData): bool
+    {
+        $validator = Validator::make($planetData, [
+            'name' => 'required|string|max:255',
+            'rotation_period' => 'required|string|max:255',
+            'orbital_period' => 'required|string|max:255',
+            'diameter' => 'required|string|max:255',
+            'climate' => 'required|string|max:255',
+            'gravity' => 'required|string|max:255',
+            'terrain' => 'required|string|max:255',
+            'surface_water' => 'required|string|max:255',
+            'population' => 'required|string|max:255',
+            'url' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            Log::error('Validation failed for planets data', $validator->errors()->toArray());
+            return false;
         }
+
+        return true;
+    }
+
+    /**
+     * Validate the provided resident data.
+     *
+     * @param  array  $residentData
+     * @return bool
+     */
+    public function validateResidentData(array $residentData): bool
+    {
+        $validator = Validator::make($residentData, [
+            'name' => 'required|string|max:255',
+            'height' => 'required|string|max:255',
+            'mass' => 'required|string|max:255',
+            'hair_color' => 'required|string|max:255',
+            'skin_color' => 'required|string|max:255',
+            'eye_color' => 'required|string|max:255',
+            'birth_year' => 'required|string|max:255',
+            'gender' => 'required|string|max:255',
+            'url' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            Log::error('Validation failed for residents data', $validator->errors()->toArray());
+            return false;
+        }
+
+        return true;
     }
 }

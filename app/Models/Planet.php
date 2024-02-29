@@ -24,6 +24,7 @@ class Planet extends Model
         'terrain',
         'surface_water',
         'population',
+        'url',
     ];
 
     /**

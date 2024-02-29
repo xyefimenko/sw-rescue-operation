@@ -17,13 +17,14 @@ class CreateResidentsTable extends Migration
             $table->id();
             $table->foreignId('planet_id')->constrained('planets')->onDelete('cascade');
             $table->string('name')->index();
-            $table->integer('height');
-            $table->integer('mass');
+            $table->string('height');
+            $table->string('mass');
             $table->string('hair_color');
             $table->string('skin_color');
             $table->string('eye_color');
             $table->string('birth_year');
             $table->string('gender');
+            $table->string('url')->unique();
             $table->timestamps();
         });
     }

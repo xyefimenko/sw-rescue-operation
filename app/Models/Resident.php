@@ -24,6 +24,7 @@ class Resident extends Model
         'eye_color',
         'birth_year',
         'gender',
+        'url',
     ];
 
     /**
