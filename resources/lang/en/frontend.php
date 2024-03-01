@@ -10,6 +10,7 @@ return [
 
     'site_title' => 'SW Rescue Operation',
     'site_description' => 'Stranded on an unknown desert planet with a broken ship and limited supplies, a young Jedi must quickly identify their location and call for help. With access to an ancient API containing data of all known planets in the universe, the Jedi embarks on a mission to sync this data and create a web application. This application will provide a simple UI to filter and list planets by diameter, rotation period, and gravity, helping the Jedi to identify the planet they are on. The application also includes a logbook, where the Jedi can track their progress in this hostile environment.',
+    'sync_command_description' => 'Please click on the button to synchronize all planets and residents internet data.',
     'site_keywords' => 'Star Wars, SW, Rescue, Operation, Jedi, API, Planets, Universe, Desert, Planet, Ship, Supplies, Mission, Sync, Data, Web, Application, UI, Filter, List, Diameter, Rotation, Period, Gravity, Logbook, Progress, Hostile, Environment, Force',
     'site_author' => 'Denys Yefimenko',
     'force' => 'May the Force be with you',

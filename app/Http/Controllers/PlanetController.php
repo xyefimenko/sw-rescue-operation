@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\PlanetRepository;
 use App\Http\Requests\PlanetSearchRequest;
+use Illuminate\Support\Facades\Artisan;
 
 class PlanetController extends Controller
 {
@@ -20,5 +21,12 @@ class PlanetController extends Controller
         $planets = $planetRepository->getFilteredPlanets($request->validated());
 
         return view('planets.index', compact('planets'));
+    }
+
+    public function triggerSyncCommand()
+    {
+        Artisan::call('sync:planets-and-residents');
+
+        return redirect()->route('planets');
     }
 }

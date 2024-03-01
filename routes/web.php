@@ -21,3 +21,4 @@ Route::get('/', function () {
 
 Route::get('/planets', [PlanetController::class, 'index'])->name('planets');
 Route::get('/residents', [ResidentsController::class, 'index'])->name('residents');
+Route::post('/sync-data', [PlanetController::class, 'triggerSyncCommand'])->name('trigger.command');
