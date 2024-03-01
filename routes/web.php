@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PlanetController;
+use App\Http\Controllers\ResidentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +16,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return view('default');
+})->name('home');
+
+Route::get('/planets', [PlanetController::class, 'index'])->name('planets');
+Route::get('/residents', [ResidentsController::class, 'index'])->name('residents');
