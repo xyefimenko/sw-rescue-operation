@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Http\Requests\PlanetStoreRequest;
+use App\Http\Requests\ResidentStoreRequest;
 use App\Models\Planet;
 use App\Models\Resident;
 use App\Repositories\PlanetRepository;
@@ -14,7 +16,6 @@ class PlanetResidentSyncService
 {
 
     //TODO Add hash to compare coming data and skip if it's the same
-    //TODO Refactor the code if necessary
 
     /**
      * The URL of the Star Wars API planets.
@@ -174,18 +175,8 @@ class PlanetResidentSyncService
      */
     public function validatePlanetData(array $planetData): bool
     {
-        $validator = Validator::make($planetData, [
-            'name' => 'required|string|max:255',
-            'rotation_period' => 'required|string|max:255',
-            'orbital_period' => 'required|string|max:255',
-            'diameter' => 'required|string|max:255',
-            'climate' => 'required|string|max:255',
-            'gravity' => 'required|string|max:255',
-            'terrain' => 'required|string|max:255',
-            'surface_water' => 'required|string|max:255',
-            'population' => 'required|string|max:255',
-            'url' => 'required|string|max:255',
-        ]);
+        $request = new PlanetStoreRequest();
+        $validator = Validator::make($planetData, $request->rules());
 
         if ($validator->fails()) {
             Log::error('Validation failed for planets data', $validator->errors()->toArray());
@@ -203,17 +194,8 @@ class PlanetResidentSyncService
      */
     public function validateResidentData(array $residentData): bool
     {
-        $validator = Validator::make($residentData, [
-            'name' => 'required|string|max:255',
-            'height' => 'required|string|max:255',
-            'mass' => 'required|string|max:255',
-            'hair_color' => 'required|string|max:255',
-            'skin_color' => 'required|string|max:255',
-            'eye_color' => 'required|string|max:255',
-            'birth_year' => 'required|string|max:255',
-            'gender' => 'required|string|max:255',
-            'url' => 'required|string|max:255',
-        ]);
+        $request = new ResidentStoreRequest();
+        $validator = Validator::make($residentData, $request->rules());
 
         if ($validator->fails()) {
             Log::error('Validation failed for residents data', $validator->errors()->toArray());

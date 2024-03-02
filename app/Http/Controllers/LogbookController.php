@@ -16,7 +16,11 @@ class LogbookController extends Controller
      */
     public function store(LogbookStoreRequest $request)
     {
-        $logbook = Logbook::create($request->validated());
-        return response()->json($logbook, 201);
+        $validated = $request->validated();
+        $logbooks = [];
+        foreach ($validated as $logbookData) {
+            $logbooks[] = Logbook::create($logbookData);
+        }
+        return response()->json($logbooks, 201);
     }
 }
