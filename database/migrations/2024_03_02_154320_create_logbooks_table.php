@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateLogbookTable extends Migration
+class CreateLogbooksTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,12 @@ class CreateLogbookTable extends Migration
      */
     public function up()
     {
-        Schema::create('logbook', function (Blueprint $table) {
+        Schema::create('logbooks', function (Blueprint $table) {
             $table->id();
-            $table->string('mood')->default('neutral');
-            $table->string('weather')->default('unknown');
-            $table->string('gps_location')->default('unknown');
+            $table->foreignId('planet_id')->constrained('planets');
+            $table->string('mood')->nullable();
+            $table->string('weather')->nullable();
+            $table->string('gps_location')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
         });
@@ -30,6 +31,6 @@ class CreateLogbookTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('logbook');
+        Schema::dropIfExists('logbooks');
     }
 }

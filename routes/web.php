@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PlanetController;
-use App\Http\Controllers\ResidentsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +19,4 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/planets', [PlanetController::class, 'index'])->name('planets');
-Route::get('/planets/aggregated-data', [PlanetController::class, 'getAggregatedData']);
-Route::get('/residents', [ResidentsController::class, 'index'])->name('residents');
 Route::post('/sync-data', [PlanetController::class, 'triggerSyncCommand'])->name('trigger.command');

@@ -15,15 +15,15 @@ class CreateResidentsTable extends Migration
     {
         Schema::create('residents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('planet_id')->constrained('planets')->onDelete('cascade');
+            $table->foreignId('planet_id')->constrained('planets');
             $table->string('name')->index();
-            $table->string('height');
-            $table->string('mass');
-            $table->string('hair_color');
-            $table->string('skin_color');
-            $table->string('eye_color');
-            $table->string('birth_year');
-            $table->string('gender');
+            $table->string('height')->nullable();
+            $table->string('mass')->nullable();
+            $table->string('hair_color')->nullable();
+            $table->string('skin_color')->nullable();
+            $table->string('eye_color')->nullable();
+            $table->string('birth_year')->nullable();
+            $table->string('gender')->nullable();
             $table->string('url')->unique();
             $table->timestamps();
         });

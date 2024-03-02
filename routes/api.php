@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\PlanetController;
+use App\Http\Controllers\LogbookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +19,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('/logbook', [LogbookController::class, 'store']);
+Route::get('/planets/aggregated-data', [PlanetController::class, 'getAggregatedData']);
