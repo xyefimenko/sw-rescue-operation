@@ -54,4 +54,24 @@ class PlanetRepository
 
         return $query->paginate(10);
     }
+
+    /**
+     * Get the aggregated data about the planets.
+     *
+     * @return array
+     */
+    public function getAggregatedData()
+    {
+        // List of names of 10 largest planets
+        $largestPlanets = Planet::where('diameter', '!=', 'unknown')
+            ->orderByRaw('CAST(diameter AS UNSIGNED) DESC')
+            ->take(10)
+            ->get(['name', 'diameter']);
+
+        //TODO: Add distribution of the terrain and distribution of the species living in all planets
+
+        return [
+            'largest_planets' => $largestPlanets,
+        ];
+    }
 }

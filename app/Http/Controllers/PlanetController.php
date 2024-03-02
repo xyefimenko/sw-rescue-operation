@@ -23,10 +23,28 @@ class PlanetController extends Controller
         return view('planets.index', compact('planets'));
     }
 
+    /**
+     * Trigger the Artisan command to sync planets and residents.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function triggerSyncCommand()
     {
         Artisan::call('sync:planets-and-residents');
 
         return redirect()->route('planets');
+    }
+
+    /**
+     * Get the aggregated data about the planets.
+     *
+     * @param  \App\Repositories\PlanetRepository  $planetRepository
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAggregatedData(PlanetRepository $planetRepository)
+    {
+        $data = $planetRepository->getAggregatedData();
+
+        return response()->json($data);
     }
 }
