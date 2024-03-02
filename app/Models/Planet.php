@@ -36,4 +36,14 @@ class Planet extends Model
     {
         return $this->hasMany(Resident::class);
     }
+
+    /**
+     * Get the logbooks for the planet.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function logbooks()
+    {
+        return $this->hasMany(Logbook::class);
+    }
 }
