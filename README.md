@@ -9,13 +9,13 @@ May the Force be with you on your journey!
 
 ## Start up the project
 
-1. Prepare docker and ddev
-2. Clone the repository
-3. Run `ddev start` to start the project
-4. Run `composer install` to install the dependencies
+1. Prepare docker and ddev.
+2. Clone the repository.
+3. Run `ddev start` to start the project.
+4. Run `composer install` to install the dependencies.
 5. Run `ddev import-db --src=sql/db.sql.gz` to import the database or run `ddev ssh` and `php artisan migrate` to add an empty DB.
-6. Run `npm install` to install the frontend dependencies
-7. Run `npm run dev` to compile the frontend assets
+6. Run `npm install` to install the frontend dependencies.
+7. Run `npm run dev` to compile the frontend assets.
 
 Now you can access the project at `http://sw-rescue-operation.ddev.site/`.
 For additional site info you can run `ddev describe`.
@@ -38,9 +38,9 @@ For additional site info you can run `ddev describe`.
 ### Aggregated Data API endpoint
 
 - The application provides an API endpoint at `https://sw-rescue-operation.ddev.site/api/planets` that returns aggregated data about the planets. The endpoint returns the following data:
-  - List of names of 10 largest planets
-  - Distribution of the terrain - how many planets have a certain terrain type
-  - Distribution of the species living in all planets with percentage
+  - List of names of 10 largest planets.
+  - Distribution of the terrain - how many planets have a certain terrain type.
+  - Distribution of the species living in all planets with percentage.
 
 ### Logbook
 
@@ -77,9 +77,9 @@ For additional site info you can run `ddev describe`.
 
 If you have time other than survival and want to contribute to the project, here are some ideas for improvement:
 
-- Add logbook info for each planet in the planets listing
-- Write tests for the application for the case of the attack of the Sith
+- Add logbook info for each planet in the planets listing.
+- Write tests for the application for the case of the attack of the Sith.
 - Current sync script adds or updates planets and residents. It would be nice to skip iteration if data are the same. You can achieve it via adding the data hash that checks if the data is the same and skip the iteration. Also, caching can be used for that.
-- Add a feature for editing all necessary data on the frontend. Logbook creating or deleting for example
+- Add a feature for editing all necessary data on the frontend. Logbook creating or deleting for example.
 
 ## May the Force be with you!
