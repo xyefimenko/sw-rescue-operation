@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\PlanetResidentSyncService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class SyncPlanetsAndResidents
@@ -60,11 +61,14 @@ class SyncPlanetsAndResidents extends Command
      */
     public function handle()
     {
+        Log::info('Starting planets and residents sync process');
         try {
             $this->syncService->sync();
             $this->info('Synced planets and residents from the Star Wars API.');
+            Log::info('Planets and residents sync process completed successfully.');
         } catch (\Exception $e) {
             $this->error('An error occurred while syncing planets and residents: ' . $e->getMessage());
+            Log::error('An error occurred while syncing planets and residents: ' . $e->getMessage());
         }
 
         return 0;

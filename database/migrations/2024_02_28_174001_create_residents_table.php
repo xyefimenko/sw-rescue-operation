@@ -16,6 +16,7 @@ class CreateResidentsTable extends Migration
         Schema::create('residents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('planet_id')->constrained('planets');
+            $table->foreignId('specie_id')->nullable()->constrained('species');
             $table->string('name')->index();
             $table->string('height')->nullable();
             $table->string('mass')->nullable();

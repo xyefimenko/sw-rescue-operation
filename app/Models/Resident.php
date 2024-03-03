@@ -16,6 +16,7 @@ class Resident extends Model
      */
     protected $fillable = [
         'planet_id',
+        'specie_id',
         'name',
         'height',
         'mass',
@@ -35,5 +36,15 @@ class Resident extends Model
     public function planet()
     {
         return $this->belongsTo(Planet::class);
+    }
+
+    /**
+     * Get the planet that owns the resident.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function species()
+    {
+        return $this->belongsTo(Specie::class);
     }
 }

@@ -4,10 +4,13 @@ namespace App\Services;
 
 use App\Http\Requests\PlanetStoreRequest;
 use App\Http\Requests\ResidentStoreRequest;
+use App\Http\Requests\SpecieStoreRequest;
 use App\Models\Planet;
 use App\Models\Resident;
+use App\Models\Specie;
 use App\Repositories\PlanetRepository;
 use App\Repositories\ResidentRepository;
+use App\Repositories\SpeciesRepository;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -39,6 +42,13 @@ class PlanetResidentSyncService
     private $residentRepository;
 
     /**
+     * The SpeciesRepository instance.
+     *
+     * @var SpeciesRepository
+     */
+    private $speciesRepository;
+
+    /**
      * The GuzzleHttp\Client instance.
      *
      * @var Client
@@ -50,12 +60,18 @@ class PlanetResidentSyncService
      *
      * @param  PlanetRepository  $planetRepository
      * @param  ResidentRepository  $residentRepository
+     * @param  SpeciesRepository  $speciesRepository
      * @return void
      */
-    public function __construct(PlanetRepository $planetRepository, ResidentRepository $residentRepository)
+    public function __construct(
+        PlanetRepository $planetRepository,
+        ResidentRepository $residentRepository,
+        SpeciesRepository  $speciesRepository
+    )
     {
         $this->planetRepository = $planetRepository;
         $this->residentRepository = $residentRepository;
+        $this->speciesRepository = $speciesRepository;
         $this->client = new Client();
     }
 
@@ -100,7 +116,8 @@ class PlanetResidentSyncService
                     function ($response) use ($planet) {
                         $residentData = json_decode($response->getBody(), true);
                         if ($this->validateResidentData($residentData)) {
-                            $this->createResident($residentData, $planet);
+                            $resident = $this->createResident($residentData, $planet);
+                            $this->parseSpeciesData($residentData['species'], $resident);
                         }
                     },
                     function ($exception) {
@@ -113,6 +130,56 @@ class PlanetResidentSyncService
                 $promise->wait();
             }
         }
+    }
+
+    /**
+     * Parse species data and create new Species records.
+     *
+     * @param  array  $speciesUrls  The URLs of the species data.
+     * @param  Resident  $resident  The resident associated with the species.
+     * @return void
+     */
+    public function parseSpeciesData(array $speciesUrls, Resident $resident)
+    {
+        foreach ($speciesUrls as $speciesUrl) {
+            $response = $this->client->request('GET', $speciesUrl);
+            $speciesData = json_decode($response->getBody(), true);
+            if ($this->validateSpeciesData($speciesData)) {
+                $this->createSpecie($speciesData);
+            }
+        }
+    }
+
+    /**
+     * Fetch species data and create a new Species record.
+     *
+     * @param  string|null  $speciesUrl  The URL of the species data.
+     * @return Specie|null  The created Species record, or null if the species data could not be fetched or is invalid.
+     */
+    private function fetchAndCreateSpecies(?string $speciesUrl): ?Specie
+    {
+        if ($speciesUrl === null) {
+            return null;
+        }
+
+        $speciesData = $this->getSpeciesData($speciesUrl);
+        if (!$this->validateSpeciesData($speciesData)) {
+            return null;
+        }
+
+        return $this->createSpecie($speciesData);
+    }
+
+    /**
+     * Fetch species data from the Star Wars API.
+     *
+     * @param  string  $url  The URL of the species data.
+     * @return array  The species data.
+     */
+    public function getSpeciesData(string $url): array
+    {
+        $response = $this->client->request('GET', $url);
+        return json_decode($response->getBody(), true);
     }
 
     /**
@@ -148,6 +215,8 @@ class PlanetResidentSyncService
      */
     public function createResident(array $residentData, Planet $planet): Resident
     {
+        $species = $this->fetchAndCreateSpecies($residentData['species'][0] ?? null);
+
         return $this->residentRepository->updateOrCreate(
             [
                 'name' => $residentData['name'],
@@ -155,6 +224,7 @@ class PlanetResidentSyncService
             ],
             [
                 'planet_id' => $planet->id,
+                'specie_id' => isset($species) ? $species->id : null,
                 'name' => $residentData['name'],
                 'height' => $residentData['height'],
                 'mass' => $residentData['mass'],
@@ -163,6 +233,31 @@ class PlanetResidentSyncService
                 'eye_color' => $residentData['eye_color'],
                 'birth_year' => $residentData['birth_year'],
                 'gender' => $residentData['gender'],
+            ]
+        );
+    }
+
+    /**
+     * Create a new Specie record or update an existing one.
+     *
+     * @param  array  $specieData
+     * @return Specie
+     */
+    public function createSpecie(array $specieData): Specie
+    {
+        return $this->speciesRepository->updateOrCreate(
+            ['url' => $specieData['url']],
+            [
+                'name' => $specieData['name'],
+                'classification' => $specieData['classification'],
+                'designation' => $specieData['designation'],
+                'average_height' => $specieData['average_height'],
+                'skin_colors' => $specieData['skin_colors'],
+                'hair_colors' => $specieData['hair_colors'],
+                'eye_colors' => $specieData['eye_colors'],
+                'average_lifespan' => $specieData['average_lifespan'],
+                'homeworld' => $specieData['homeworld'],
+                'language' => $specieData['language'],
             ]
         );
     }
@@ -199,6 +294,25 @@ class PlanetResidentSyncService
 
         if ($validator->fails()) {
             Log::error('Validation failed for residents data', $validator->errors()->toArray());
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validate the provided species data.
+     *
+     * @param  array  $speciesData
+     * @return bool
+     */
+    public function validateSpeciesData(array $speciesData): bool
+    {
+        $request = new SpecieStoreRequest();
+        $validator = Validator::make($speciesData, $request->rules());
+
+        if ($validator->fails()) {
+            Log::error('Validation failed for species data', $validator->errors()->toArray());
             return false;
         }
 

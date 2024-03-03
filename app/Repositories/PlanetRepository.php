@@ -3,6 +3,9 @@
 namespace App\Repositories;
 
 use App\Models\Planet;
+use App\Models\Resident;
+use App\Models\Specie;
+use Illuminate\Support\Facades\DB;
 
 class PlanetRepository
 {
@@ -68,10 +71,33 @@ class PlanetRepository
             ->take(10)
             ->get(['name', 'diameter']);
 
-        //TODO: Add distribution of the terrain and distribution of the species living in all planets
+        // Distribution of the terrain
+        $terrainDistribution = Planet::all()
+            ->flatMap(function ($planet) {
+                return array_map('trim', explode(',', $planet->terrain));
+            })
+            ->countBy()
+            ->toArray();
+
+
+        // Total number of residents
+        $totalResidents = Resident::count();
+
+        // Distribution of the species living in all planets
+        $speciesDistribution = DB::table('residents')
+            ->select('specie_id', DB::raw('count(*) as total'))
+            ->groupBy('specie_id')
+            ->get()
+            ->mapWithKeys(function ($item) use ($totalResidents) {
+                $speciesName = $item->specie_id ? Specie::find($item->specie_id)->name : 'Unknown';
+                $percentage = round(($item->total / $totalResidents) * 100, 2);
+                return [$speciesName => ['total' => $item->total, 'percentage' => $percentage]];
+            });
 
         return [
             'largest_planets' => $largestPlanets,
+            'terrain_distribution' => $terrainDistribution,
+            'species_distribution' => $speciesDistribution,
         ];
     }
 }
