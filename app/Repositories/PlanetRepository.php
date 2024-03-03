@@ -61,29 +61,58 @@ class PlanetRepository
     /**
      * Get the aggregated data about the planets.
      *
+     * The aggregated data includes:
+     * - The names of the 10 largest planets
+     * - The distribution of the terrain across all planets
+     * - The distribution of the species living on all planets
+     *
      * @return array
      */
     public function getAggregatedData()
     {
-        // List of names of 10 largest planets
+        return [
+            'largest_planets' => $this->getLargestPlanets(),
+            'terrain_distribution' => $this->getTerrainDistribution(),
+            'species_distribution' => $this->getSpeciesDistribution(),
+        ];
+    }
+
+    /**
+     * Get the largest planets.
+     *
+     * @return array An array containing the names of the 10 largest planets.
+     */
+    public function getLargestPlanets() {
         $largestPlanets = Planet::where('diameter', '!=', 'unknown')
             ->orderByRaw('CAST(diameter AS UNSIGNED) DESC')
             ->take(10)
-            ->get(['name', 'diameter']);
+            ->get(['name', 'diameter'])
+            ->toArray();
+        return $largestPlanets ?? null;
+    }
 
-        // Distribution of the terrain
+    /**
+     * Get the distribution of the terrain across all planets.
+     *
+     * @return array
+     */
+    public function getTerrainDistribution() {
         $terrainDistribution = Planet::all()
             ->flatMap(function ($planet) {
                 return array_map('trim', explode(',', $planet->terrain));
             })
             ->countBy()
             ->toArray();
+        return $terrainDistribution ?? null;
+    }
 
-
-        // Total number of residents
+    /**
+     * Get the distribution of the species living on all planets.
+     *
+     * @return array
+     */
+    public function getSpeciesDistribution() {
         $totalResidents = Resident::count();
-
-        // Distribution of the species living in all planets
         $speciesDistribution = DB::table('residents')
             ->select('specie_id', DB::raw('count(*) as total'))
             ->groupBy('specie_id')
@@ -92,12 +121,8 @@ class PlanetRepository
                 $speciesName = $item->specie_id ? Specie::find($item->specie_id)->name : 'Unknown';
                 $percentage = round(($item->total / $totalResidents) * 100, 2);
                 return [$speciesName => ['total' => $item->total, 'percentage' => $percentage]];
-            });
-
-        return [
-            'largest_planets' => $largestPlanets,
-            'terrain_distribution' => $terrainDistribution,
-            'species_distribution' => $speciesDistribution,
-        ];
+            })
+            ->toArray();
+        return $speciesDistribution ?? null;
     }
 }

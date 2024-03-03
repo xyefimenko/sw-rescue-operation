@@ -16,8 +16,6 @@ return [
     'force' => 'May the Force be with you',
     'page_homepage' => 'SWAPI',
     'page_planets' => 'Planets',
-    'page_residents' => 'Residents',
-    'page_progress' => 'Progress',
     'planets_table_no_planets' => 'No planets found',
     'planets_table_title' => 'List of known planets',
     'planets_table_columns' => [

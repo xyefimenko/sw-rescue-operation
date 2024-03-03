@@ -11,9 +11,6 @@
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="{{ route('planets') }}">{{ __('frontend.page_planets') }}</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">{{ __('frontend.page_progress') }}</a>
-                    </li>
                 </ul>
             </div>
         </div>

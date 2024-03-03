@@ -38,7 +38,7 @@ class PlanetController extends Controller
     /**
      * Get the aggregated data about the planets.
      *
-     * @param  \App\Repositories\PlanetRepository  $planetRepository
+     * @param  PlanetRepository  $planetRepository
      * @return \Illuminate\Http\JsonResponse
      */
     public function getAggregatedData(PlanetRepository $planetRepository)

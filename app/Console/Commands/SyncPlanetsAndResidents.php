@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * Class SyncPlanetsAndResidents
  *
- * This command syncs the list of all known planets and their residents
+ * This command syncs the list of all known planets and their residents and species
  * from the Star Wars API to the local database.
  *
  * @package App\Console\Commands
@@ -28,7 +28,7 @@ class SyncPlanetsAndResidents extends Command
      *
      * @var string
      */
-    protected $description = 'Command will sync the list of all known planets and their residents';
+    protected $description = 'Command will sync the list of all known planets and their residents and species';
 
     /**
      * The service that handles the syncing process.
@@ -55,7 +55,7 @@ class SyncPlanetsAndResidents extends Command
      *
      * This method calls the sync method on the sync service to start
      * the syncing process. After the syncing process is complete,
-     * it outputs a message to the console.
+     * it outputs a message to the console and logs.
      *
      * @return int
      */
