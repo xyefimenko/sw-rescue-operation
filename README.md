@@ -11,11 +11,12 @@ May the Force be with you on your journey!
 
 1. Prepare docker and ddev.
 2. Clone the repository.
-3. Run `ddev start` to start the project.
+3. Run `ddev start` to start the project. Run `ddev ssh` to enter the container.
 4. Run `composer install` to install the dependencies.
-5. Run `ddev import-db --src=sql/db.sql.gz` to import the database or run `ddev ssh` and `php artisan migrate` to add an empty DB.
-6. Run `npm install` to install the frontend dependencies.
-7. Run `npm run dev` to compile the frontend assets.
+5. Run `php artisan key:generate` to generate the application key.
+6. Run `ddev import-db --src=sql/db.sql.gz` to import the database or run `ddev ssh` and `php artisan migrate` to add an empty DB.
+7. Run `npm install` to install the frontend dependencies.
+8. Run `npm run dev` to compile the frontend assets.
 
 Now you can access the project at `http://sw-rescue-operation.ddev.site/`.
 For additional site info you can run `ddev describe`.
@@ -25,7 +26,7 @@ For additional site info you can run `ddev describe`.
 ### Planets, residents and species import
 
 - The application fetches data from the Star Wars API and imports it into the database. Run artisan command `php artisan sync:planets-and-residents` to import the data or just visit the homepage and trigger main button to trigger the import (this feature was added for convenience).
-- The sync:planets-and-residents artisan command in this application fetches data about planets and their residents from the Star Wars API. It uses Guzzle's asynchronous requests to optimize the fetching of resident data. This allows the script to continue executing while waiting for the HTTP responses, reducing the total runtime of the script. 
+- The sync:planets-and-residents artisan command in this application fetches data about planets and their residents from the Star Wars API. It uses Guzzle's asynchronous requests to optimize the fetching of resident data. This allows the script to continue executing while waiting for the HTTP responses, reducing the total runtime of the script.
 
 ### Paginated listing of the planets
 
