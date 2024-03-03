@@ -1,64 +1,85 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# SW Rescue Operation
 
-## About Laravel
+Hey young Jedi! If you've found yourself lost on an unknown planet, don't panic. This solution is designed to help you determine your location and guide you on how to save your life.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This application leverages the power of the Star Wars API to fetch data about planets, residents, and species. It provides a simple paginated listing of the planets, and an API endpoint containing aggregated data about the planets. You can filter planets by diameter, rotation period, and gravity. You can also log your experiences and feelings in a logbook.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+May the Force be with you on your journey!
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Start up the project
 
-## Learning Laravel
+1. Prepare docker and ddev
+2. Clone the repository
+3. Run `ddev start` to start the project
+4. Run `composer install` to install the dependencies
+5. Run `ddev import-db --src=sql/db.sql.gz` to import the database or run `ddev ssh` and `php artisan migrate` to add an empty DB.
+6. Run `npm install` to install the frontend dependencies
+7. Run `npm run dev` to compile the frontend assets
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Now you can access the project at `http://sw-rescue-operation.ddev.site/`.
+For additional site info you can run `ddev describe`.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Features
 
-## Laravel Sponsors
+### Planets, residents and species import
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+- The application fetches data from the Star Wars API and imports it into the database. Run artisan command `php artisan sync:planets-and-residents` to import the data or just visit the homepage and trigger main button to trigger the import (this feature was added for convenience).
+- The sync:planets-and-residents artisan command in this application fetches data about planets and their residents from the Star Wars API. It uses Guzzle's asynchronous requests to optimize the fetching of resident data. This allows the script to continue executing while waiting for the HTTP responses, reducing the total runtime of the script. 
 
-### Premium Partners
+### Paginated listing of the planets
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+- Just visit the `https://sw-rescue-operation.ddev.site/planets` or go here via site navigation to see the paginated listing of the planets.
+- You can filter planets by diameter, rotation period, and gravity.
+- Global planets search is available too. Global search will find results by all available fields in the table.
+- It is possible to combine filters with one another. For example: you can filter planets by concrete diameter and gravity at the same time and get list of planets with exact attributes.
+- Reset the filters if necessary clicked on the "Reset filters" button.
 
-## Contributing
+### Aggregated Data API endpoint
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- The application provides an API endpoint at `https://sw-rescue-operation.ddev.site/api/planets` that returns aggregated data about the planets. The endpoint returns the following data:
+  - List of names of 10 largest planets
+  - Distribution of the terrain - how many planets have a certain terrain type
+  - Distribution of the species living in all planets with percentage
 
-## Code of Conduct
+### Logbook
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- The application provides a logbook where you can log your experiences and notices about planets.
+- You need to create `POST` request on `https://sw-rescue-operation.ddev.site/api/logbook` and send your notices (Postman was used for testing). Logbook data example: 
+```json
+  [
+    {
+        "planet_id": 57,
+        "mood": "Excited",
+        "weather": "Sunny",
+        "gps_location": "50.8503, 4.3517",
+        "note": "Just spotted a group of Ewoks, they seem friendly!"
+    },
+    {
+        "planet_id": 58,
+        "mood": "Nervous",
+        "weather": "Rainy",
+        "gps_location": "51.5074, 0.1278",
+        "note": "It's a bit gloomy here. I heard a Wookiee in the distance."
+    },
+    {
+        "planet_id": 59,
+        "mood": "Thrilled",
+        "weather": "Cloudy",
+        "gps_location": "48.8566, 2.3522",
+        "note": "Found an old Jedi temple, the Force is strong here!"
+    }
+]
+```
+- You can find added logbooks in the database table `logbooks`.
 
-## Security Vulnerabilities
+## TODOS
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+If you have time other than survival and want to contribute to the project, here are some ideas for improvement:
 
-## License
+- Add logbook info for each planet in the planets listing
+- Write tests for the application for the case of the attack of the Sith
+- Current sync script adds or updates planets and residents. It would be nice to skip iteration if data are the same. You can achieve it via adding the data hash that checks if the data is the same and skip the iteration. Also, caching can be used for that.
+- Add a feature for editing all necessary data on the frontend. Logbook creating or deleting for example
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## May the Force be with you!
